@@ -25,6 +25,15 @@ public class Question {
     @JsonBackReference
     private Test test;
 
+    public Question() {
+    }
+
+    public Question(Long id, String content, Test test) {
+        this.id = id;
+        this.content = content;
+        this.test = test;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

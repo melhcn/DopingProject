@@ -19,6 +19,17 @@ public class Student {
     @OneToMany(mappedBy = "student")
     private List<StudentTest> studentTests;
 
+    public Student() {}
+
+    public Student(Long id, String name, String surname, String studentNo, String email, String password) {
+    this.id = id;
+    this.name = name;
+    this.surname = surname;
+    this.studentNo = studentNo;
+    this.email = email;
+    this.password = password;
+    }
+    
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

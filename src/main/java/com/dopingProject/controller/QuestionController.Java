@@ -1,3 +1,14 @@
+package com.dopingProject.controller;
+
+import com.dopingProject.model.Question;
+import com.dopingProject.service.QuestionService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+
 @RestController
 @RequestMapping("/questions")
 public class QuestionController {
