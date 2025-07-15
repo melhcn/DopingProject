@@ -8,65 +8,97 @@
 </head>
 <body class="container mt-5">
 
-<script>
-    
-    if (!localStorage.getItem("studentId")) {
-        window.location.href = "login.html";
-    }
+<h2 id="testTitle">Test Çöz</h2>
+<div id="questionContainer" class="mt-4"></div>
 
-    const selectedTestId = localStorage.getItem("selectedTestId");
-    const studentTestId = localStorage.getItem("studentTestId");
-    if (!selectedTestId || !studentTestId) {
-        alert("Test bilgisi eksik! Test listesine dönülüyor.");
-        window.location.href = "tests.html";
-    }
-</script>
-
-<h2>Test Çöz</h2>
-<form id="solveForm" class="mt-4"></form>
-<button id="submitBtn" class="btn btn-success mt-3">Testi Gönder</button>
-
-<div id="resultMsg" class="mt-4"></div>
+<div class="mt-4">
+    <button id="prevBtn" class="btn btn-secondary">⬅ Geri</button>
+    <button id="nextBtn" class="btn btn-primary">İleri ➡</button>
+    <button id="submitBtn" class="btn btn-success d-none">Testi Gönder</button>
+</div>
 
 <script>
-async function loadQuestions() {
-    const res = await fetch(`/tests/${selectedTestId}`);
-    const test = await res.json();
-    document.querySelector("h2").innerText = test.testName;
-
-    const form = document.getElementById("solveForm");
-    form.innerHTML = "";
-
-    test.questions.forEach((q, idx) => {
-        let html = `<div class="mb-3">
-            <strong>${idx+1}. Soru: ${q.content}</strong><br>`;
-        q.options.forEach(opt => {
-            html += `<div class="form-check">
-                <input class="form-check-input" type="radio" 
-                    name="q${q.id}" value="${opt}" required>
-                <label class="form-check-label">${opt}</label>
-            </div>`;
-        });
-        html += `</div>`;
-        form.innerHTML += html;
-    });
+const selectedTestId = localStorage.getItem("selectedTestId");
+const studentTestId = localStorage.getItem("studentTestId");
+if (!selectedTestId || !studentTestId) {
+    alert("Test bilgisi eksik! Test listesine dönülüyor.");
+    window.location.href = "tests.html";
 }
 
-document.getElementById("submitBtn").addEventListener("click", async () => {
-    const form = document.getElementById("solveForm");
-    const inputs = form.querySelectorAll("input[type=radio]:checked");
+let questions = [];
+let answers = JSON.parse(localStorage.getItem(`answers_${selectedTestId}`)) || {};
+let currentIndex = parseInt(localStorage.getItem(`currentIndex_${selectedTestId}`) || "0");
 
-    const answers = {};
-    inputs.forEach(input => {
-        const qid = input.name.substring(1); // "q123" -> "123"
-        answers[qid] = input.value;
+async function loadTest() {
+    const cacheKey = `test_${selectedTestId}`;
+    let test;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+        console.log("LocalStorage'dan yükleniyor...");
+        test = JSON.parse(cached);
+    } else {
+        console.log("Server'dan çekiliyor...");
+        const res = await fetch(`/tests/${selectedTestId}`);
+        test = await res.json();
+        localStorage.setItem(cacheKey, JSON.stringify(test));
+    }
+
+    questions = test.questions;
+    document.getElementById("testTitle").innerText = test.testName;
+    renderQuestion();
+}
+
+function renderQuestion() {
+    const container = document.getElementById("questionContainer");
+    container.innerHTML = "";
+
+    const q = questions[currentIndex];
+    let html = `<div class="mb-3"><strong>${currentIndex+1}. Soru: ${q.content}</strong></div>`;
+    q.options.forEach(opt => {
+        const checked = answers[q.id] === opt ? "checked" : "";
+        html += `
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="answer" value="${opt}" ${checked}>
+            <label class="form-check-label">${opt}</label>
+        </div>`;
     });
+    container.innerHTML = html;
 
+    // butonları ayarla
+    document.getElementById("prevBtn").disabled = currentIndex === 0;
+    document.getElementById("nextBtn").classList.toggle("d-none", currentIndex === questions.length - 1);
+    document.getElementById("submitBtn").classList.toggle("d-none", currentIndex !== questions.length - 1);
+
+    localStorage.setItem(`currentIndex_${selectedTestId}`, currentIndex);
+}
+
+function saveAnswer() {
+    const selected = document.querySelector("input[name=answer]:checked");
+    if (selected) {
+        const qid = questions[currentIndex].id;
+        answers[qid] = selected.value;
+        localStorage.setItem(`answers_${selectedTestId}`, JSON.stringify(answers));
+    }
+}
+
+document.getElementById("prevBtn").addEventListener("click", () => {
+    saveAnswer();
+    currentIndex--;
+    renderQuestion();
+});
+
+document.getElementById("nextBtn").addEventListener("click", () => {
+    saveAnswer();
+    currentIndex++;
+    renderQuestion();
+});
+
+document.getElementById("submitBtn").addEventListener("click", async () => {
+    saveAnswer();
     const payload = {
         studentTestId: studentTestId,
         answers: answers
     };
-
     console.log("Gönderilen cevaplar:", payload);
 
     const res = await fetch("/student-tests/finish", {
@@ -76,14 +108,17 @@ document.getElementById("submitBtn").addEventListener("click", async () => {
     });
 
     if (res.ok) {
+        localStorage.removeItem(`test_${selectedTestId}`);
+        localStorage.removeItem(`answers_${selectedTestId}`);
+        localStorage.removeItem(`currentIndex_${selectedTestId}`);
         alert("Test başarıyla gönderildi!");
         window.location.href = "results.html";
     } else {
-        document.getElementById("resultMsg").innerText = "Test gönderilirken bir hata oluştu.";
+        alert("Test gönderilirken bir hata oluştu.");
     }
 });
 
-loadQuestions();
+loadTest();
 </script>
 </body>
 </html>
