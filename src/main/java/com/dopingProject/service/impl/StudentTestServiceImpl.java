@@ -59,31 +59,38 @@ public class StudentTestServiceImpl implements StudentTestService {
         return studentTestRepository.findByTestId(testId);
     }
 
-   @Override
-public StudentTest finishTest(Long studentTestId, Map<String, String> answersStr) {
+        @Override
+    public StudentTest finishTest(Long studentTestId, Map<String, String> answersStr) {
     StudentTest st = studentTestRepository.findById(studentTestId).orElse(null);
     if (st != null) {
         int correct = 0;
         int wrong = 0;
+        int blank = 0;
 
-        // String->Long key conversion
+        
         Map<Long, String> answers = new java.util.HashMap<>();
         for (Map.Entry<String, String> entry : answersStr.entrySet()) {
             answers.put(Long.parseLong(entry.getKey()), entry.getValue());
         }
 
-        // test içindeki sorularla karşılaştır
+        
         for (Question q : st.getTest().getQuestions()) {
             String selected = answers.get(q.getId());
-            if (selected != null && selected.equals(q.getCorrectAnswer())) {
+            if (selected == null || selected.isEmpty()) {
+                blank++;
+            } else if (selected.equals(q.getCorrectAnswer())) {
                 correct++;
             } else {
                 wrong++;
             }
         }
 
+        double score = correct * 1.0 - wrong * 0.33;
+
         st.setCorrectCount(correct);
         st.setWrongCount(wrong);
+        st.setBlankCount(blank);
+        st.setScore(score);
         st.setAnswers(answers);
         st.setDateTaken(LocalDateTime.now());
 

@@ -94,7 +94,7 @@ public class DataInitializer {
             )
         );
 
-        // Öğrencileri bazı testlere çözmüş kaydet
+        // Çözülmüş kayıtları oluştur
         saveStudentTest(s1, t1, Map.of(
                 t1.getQuestions().get(0).getId(), "4",
                 t1.getQuestions().get(1).getId(), "2",
@@ -148,26 +148,35 @@ public class DataInitializer {
     private void saveStudentTest(Student student, Test test, Map<Long, String> answers) {
         int correct = 0;
         int wrong = 0;
+        int blank = 0;
+
         for (Question q : test.getQuestions()) {
             String selected = answers.get(q.getId());
-            if (selected != null && selected.equals(q.getCorrectAnswer())) {
+            if (selected == null || selected.isEmpty()) {
+                blank++;
+            } else if (selected.equals(q.getCorrectAnswer())) {
                 correct++;
             } else {
                 wrong++;
             }
         }
 
+        double score = correct * 1.0 - wrong * 0.33;
+
         StudentTest st = new StudentTest();
         st.setStudent(student);
         st.setTest(test);
         st.setCorrectCount(correct);
         st.setWrongCount(wrong);
+        st.setBlankCount(blank);
+        st.setScore(score);
         st.setAnswers(answers);
         st.setDateTaken(java.time.LocalDateTime.now());
+
         studentTestRepository.save(st);
     }
 
-    // küçük DTO class
+    // DTO
     private static class QuestionData {
         private final String content;
         private final String correctAnswer;
@@ -178,7 +187,6 @@ public class DataInitializer {
             this.correctAnswer = correctAnswer;
             this.options = options;
         }
-
         public String getContent() { return content; }
         public String getCorrectAnswer() { return correctAnswer; }
         public List<String> getOptions() { return options; }

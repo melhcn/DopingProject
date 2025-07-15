@@ -6,7 +6,6 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-
 @Entity
 @Table(name = "student_tests")
 public class StudentTest {
@@ -16,6 +15,8 @@ public class StudentTest {
 
     private int correctCount;
     private int wrongCount;
+    private int blankCount;   
+    private double score;     
     private int rank;
     private LocalDateTime dateTaken;
 
@@ -34,6 +35,8 @@ public class StudentTest {
     @Column(name = "selected_answer")
     private Map<Long, String> answers;
 
+    // --- GETTERS & SETTERS ---
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -42,6 +45,12 @@ public class StudentTest {
 
     public int getWrongCount() { return wrongCount; }
     public void setWrongCount(int wrongCount) { this.wrongCount = wrongCount; }
+
+    public int getBlankCount() { return blankCount; }
+    public void setBlankCount(int blankCount) { this.blankCount = blankCount; }
+
+    public double getScore() { return score; }
+    public void setScore(double score) { this.score = score; }
 
     public int getRank() { return rank; }
     public void setRank(int rank) { this.rank = rank; }

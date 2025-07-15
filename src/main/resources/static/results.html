@@ -38,8 +38,12 @@ async function loadResults() {
         div.className = "card p-3 mb-3";
         div.innerHTML = `
             <h5>${st.test.testName}</h5>
-            <p><strong>Doğru:</strong> ${st.correctCount}, 
-               <strong>Yanlış:</strong> ${st.wrongCount}</p>
+            <p>
+                <strong>Doğru:</strong> ${st.correctCount}, 
+                <strong>Yanlış:</strong> ${st.wrongCount}, 
+                <strong>Boş:</strong> ${st.blankCount}, 
+                <strong>Puan:</strong> ${st.score.toFixed(2)}
+            </p>
             <small>Çözülme Zamanı: ${new Date(st.dateTaken).toLocaleString()}</small>
         `;
         container.appendChild(div);
