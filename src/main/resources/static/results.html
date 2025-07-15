@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Doping Projesi - Sonuçlar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body class="container mt-5">
+
+<script>
+    if (!localStorage.getItem("studentId")) {
+        window.location.href = "login.html";
+    }
+</script>
+
+<a href="main.html" class="btn btn-secondary mb-4">⬅ Ana Sayfaya Dön</a>
+
+<h2>Test Sonuçların</h2>
+<div id="resultsList" class="mt-4"></div>
+
+<script>
+async function loadResults() {
+    const studentId = localStorage.getItem("studentId");
+    const res = await fetch(`/student-tests/student/${studentId}`);
+    const results = await res.json();
+
+    const container = document.getElementById("resultsList");
+    container.innerHTML = "";
+
+    if (results.length === 0) {
+        container.innerHTML = "<p>Henüz test sonucu yok.</p>";
+        return;
+    }
+
+    results.forEach(st => {
+        const div = document.createElement("div");
+        div.className = "card p-3 mb-3";
+        div.innerHTML = `
+            <h5>${st.test.testName}</h5>
+            <p><strong>Doğru:</strong> ${st.correctCount}, 
+               <strong>Yanlış:</strong> ${st.wrongCount}</p>
+            <small>Çözülme Zamanı: ${new Date(st.dateTaken).toLocaleString()}</small>
+        `;
+        container.appendChild(div);
+    });
+}
+
+loadResults();
+</script>
+
+</body>
+</html>
