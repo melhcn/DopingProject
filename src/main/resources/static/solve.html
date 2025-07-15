@@ -64,7 +64,7 @@ function renderQuestion() {
     });
     container.innerHTML = html;
 
-    // butonları ayarla
+    
     document.getElementById("prevBtn").disabled = currentIndex === 0;
     document.getElementById("nextBtn").classList.toggle("d-none", currentIndex === questions.length - 1);
     document.getElementById("submitBtn").classList.toggle("d-none", currentIndex !== questions.length - 1);
